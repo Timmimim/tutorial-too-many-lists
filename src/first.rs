@@ -56,6 +56,8 @@ This works because B can never be all 0's, since it contains a non-zero pointer.
 // `Node` is a recursive type: Check!
 // BUUUUUTTT: Compiler complains -> List is pub, but Node is not, but Node contains the pub List
 
+use std::{boxed, mem};
+
 /* Layout 4 */
 pub struct List {
     // List is a struct with a single field
@@ -76,7 +78,6 @@ struct Node {
 
 // 2.2
 // Constructor (for empty list)
-use std::mem;
 impl List {
     pub fn new() -> Self {
         List { head: Link::Empty }
@@ -105,6 +106,36 @@ impl List {
             }
         }
     }
+}
+
+impl Drop for List {
+    fn drop(&mut self) {
+        // pull the current head link from its Box, replace it with an empty value
+        let mut cur_link = mem::replace(&mut self.head, Link::Empty);
+        // `while let` == "do this thing until this pattern doesn't match" -> while not empty
+        while let Link::More(mut boxed_node) = cur_link { // move the value, NOT a reference
+            cur_link = mem::replace(&mut boxed_node.next, Link::Empty);
+            // boxed_node goes out of scope at the end of every step in the loop
+            // --> implicitely gets dropped
+            // its Node's `next` field is set to Link::Empty, so no unbound recursion occurs 
+            // --> iterates over full list, moving non-trivial structures out to temp variables and implicitely dropping the rest
+        }
+    }
+    /* 
+        Alternate idea: use 
+            while let Some(_) = self.pop() { }
+        Difference:
+            Pop returns Option<i32>, while the above implementation only manipulates Links (i.e. Box<Node>)
+            -> only moves around pointers, while pop moves values
+        Problem:
+            Moving values can become very expensive in a generalized list, where values can become big instances of VeryBigThingWithADropImpl (VBTWADI).
+            Boxes can run the drop implementation of their contents in-place, eliminating these issues. 
+            Since VBTWADI is exactly what makes using linked-lists desirable over arrays in the first place, this bad performance would let the entire concept down.
+        Solution:
+            Best-of-both-worlds implementation: 
+            Add new method `fn pop_node(&mut self) -> Link`, from which both `pop` and `drop` can be cleanly derived.
+
+     */
 }
 
 // 2.5
