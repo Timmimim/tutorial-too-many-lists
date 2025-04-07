@@ -56,7 +56,7 @@ This works because B can never be all 0's, since it contains a non-zero pointer.
 // `Node` is a recursive type: Check!
 // BUUUUUTTT: Compiler complains -> List is pub, but Node is not, but Node contains the pub List
 
-use std::{boxed, mem};
+use std::mem;
 
 /* Layout 4 */
 pub struct List {
