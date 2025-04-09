@@ -248,7 +248,7 @@ impl<'a, T> Iterator for IterMut<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use super::List;
+    use crate::second::List;
 
     #[test]
     fn basics() {

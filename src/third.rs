@@ -152,7 +152,7 @@ impl<T> Drop for List<T> {
 
 #[cfg(test)]
 mod test {
-    use super::List;
+    use crate::third::List;
 
     #[test]
     fn basics() {
