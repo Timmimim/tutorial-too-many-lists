@@ -213,7 +213,8 @@ impl <T> DoubleEndedIterator for IntoIter<T> {
     }
 }
 
-/* // Iter
+/* 
+// Iter
 pub struct Iter<'a, T>(Option<Ref<'a, Node<T>>>);
 
 impl<T> List<T> {
@@ -238,7 +239,22 @@ impl<'a, T> Iterator for Iter<'a, T> {
             elem
         })
     }
-} */
+    c<RefCell> has really truly finally failed us. 
+    Interestingly, we've experienced an inversion of the persistent stack case. 
+    Where the persistent stack struggled to ever reclaim ownership of the data but could get references all day every day, 
+    our list had no problem gaining ownership, but really struggled to loan our references.
+
+    Although to be fair, most of our struggles revolved around wanting to hide the implementation details and have a decent API.
+    We could do everything fine if we wanted to just pass around Nodes all over the place.
+
+    Heck, we could make multiple concurrent IterMuts that were runtime checked to not be mutable accessing the same element!
+    
+    Really, this design is more appropriate for an internal data structure that never makes it out to consumers of the API.
+    Interior mutability is great for writing safe applications. Not so much safe libraries.
+
+    Anyway, that's me giving up on Iter and IterMut. We could do them, but ugh.
+} 
+ */
 
 #[cfg(test)]
 mod test {
